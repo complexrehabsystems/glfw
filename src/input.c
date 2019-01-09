@@ -32,7 +32,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 // Internal key state used for sticky keys
 #define _GLFW_STICK 3
@@ -509,9 +508,7 @@ GLFWAPI void glfwSetInputMode(GLFWwindow* handle, int mode, int value)
         _glfwPlatformGetCursorPos(window,
                                   &window->virtualCursorPosX,
                                   &window->virtualCursorPosY);
-
-        if (_glfwPlatformWindowFocused(window))
-            _glfwPlatformSetCursorMode(window, value);
+        _glfwPlatformSetCursorMode(window, value);
     }
     else if (mode == GLFW_STICKY_KEYS)
     {
@@ -1088,7 +1085,9 @@ GLFWAPI int glfwUpdateGamepadMappings(const char* string)
 
     while (*c)
     {
-        if (isxdigit(*c))
+        if ((*c >= '0' && *c <= '9') ||
+            (*c >= 'a' && *c <= 'f') ||
+            (*c >= 'A' && *c <= 'F'))
         {
             char line[1024];
 
@@ -1243,7 +1242,7 @@ GLFWAPI int glfwGetGamepadState(int jid, GLFWgamepadstate* state)
         if (e->type == _GLFW_JOYSTICK_AXIS)
         {
             const float value = js->axes[e->index] * e->axisScale + e->axisOffset;
-            state->axes[i] = fminf(fmaxf(value, -1.f), 1.f);
+            state->axes[i] = _glfw_fminf(_glfw_fmaxf(value, -1.f), 1.f);
         }
         else if (e->type == _GLFW_JOYSTICK_HATBIT)
         {
